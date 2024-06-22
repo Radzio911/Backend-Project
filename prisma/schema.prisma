@@ -1,0 +1,87 @@
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model User {
+    id             String    @id
+    username       String    @unique
+    password       String
+    name           String
+    email          String
+    phoneNumber    String
+    profilePicture String
+    bookings       Booking[]
+    reviews        Review[]
+}
+
+model Host {
+    id             String     @id
+    username       String     @unique
+    password       String
+    name           String
+    email          String
+    phoneNumber    String
+    profilePicture String
+    aboutMe        String
+    listings       Property[]
+}
+
+model Property {
+    id            String              @id
+    title         String
+    description   String
+    location      String
+    pricePerNight Decimal             @db.Decimal(10, 2)
+    bedroomCount  Int
+    bathRoomCount Int
+    maxGuestCount Int
+    rating        Int
+    host          Host                @relation(fields: [hostId], references: [id], onDelete: Cascade)
+    hostId        String
+    bookings      Booking[]
+    amenities     PropertyOnAmenity[]
+    reviews       Review[]
+}
+
+model Booking {
+    id             String   @id
+    user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId         String
+    property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+    propertyId     String
+    checkinDate    DateTime
+    checkoutDate   DateTime
+    numberOfGuests Int
+    totalPrice     Decimal  @db.Decimal(10, 2)
+    bookingStatus  String
+}
+
+model Amenity {
+    id                String              @id
+    name              String
+    PropertyOnAmenity PropertyOnAmenity[]
+}
+
+model Review {
+    id         String   @id
+    user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId     String
+    property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+    propertyId String
+    rating     Int
+    comment    String
+}
+
+model PropertyOnAmenity {
+    amenity    Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+    amenityId  String
+    property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+    propertyId String
+
+    @@id([amenityId, propertyId])
+}
